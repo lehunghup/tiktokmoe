@@ -1,0 +1,38 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Feed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100vh;
+    }
+    .video-container {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      background: black;
+    }
+    #videoFeed {
+      scroll-snap-type: y mandatory;
+      overflow-y: scroll;
+      height: 100vh;
+      scroll-behavior: smooth;
+    }
+    #videoFeed > div {
+      scroll-snap-align: start;
+    }
+  </style>
+</head>
+<body class="bg-black">
+  <div id="videoFeed" class="snap-y snap-mandatory"></div>
+  <script src="script.js"></script>
+</body>
+</html>
+```
