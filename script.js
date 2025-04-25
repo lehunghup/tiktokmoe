@@ -1,32 +1,66 @@
 ```javascript
+// Display error message to user
+function showError(message) {
+  const errorDiv = document.getElementById('errorMessage');
+  errorDiv.style.display = 'block';
+  errorDiv.innerHTML = `<p>Error: ${message}</p><p>Check the console (F12) for details.</p>`;
+  console.error(message);
+}
+
 // Fetch and parse CSV
 async function loadCSV() {
   try {
     const response = await fetch('data.csv');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data.csv: ${response.status} ${response.statusText}`);
+    }
     const csvText = await response.text();
+    if (!csvText.trim()) {
+      throw new Error('data.csv is empty');
+    }
+    console.log('CSV loaded successfully');
     return parseCSV(csvText);
   } catch (error) {
-    console.error('Error loading CSV:', error);
+    showError(`Could not load CSV file: ${error.message}`);
     return [];
   }
 }
 
 function parseCSV(csv) {
-  const lines = csv.trim().split('\n');
-  const headers = lines[0].split(',');
-  return lines.slice(1).map(line => {
-    const values = line.split(',').map(val => val.trim());
-    return headers.reduce((obj, header, i) => {
-      obj[header] = values[i];
-      return obj;
-   >, {});
-  });
+  try {
+    const lines = csv.trim().split('\n');
+    if (lines.length < 2) {
+      throw new Error('CSV has no data rows');
+    }
+    const headers = lines[0].split(',').map(h => h.trim());
+    const rows = lines.slice(1).map(line => {
+      const values = line.split(',').map(val => val.trim());
+      if (values.length !== headers.length) {
+        console.warn(`Skipping malformed row: ${line}`);
+        return null;
+      }
+      return headers.reduce((obj, header, i) => {
+        obj[header] = values[i];
+        return obj;
+      }, {});
+    }).filter(row => row !== null);
+    console.log(`Parsed ${rows.length} videos from CSV`);
+    return rows;
+  } catch (error) {
+    showError(`CSV parsing failed: ${error.message}`);
+    return [];
+  }
 }
 
 // Main function to set up video feed
 async function setupVideoFeed() {
   const videos = await loadCSV();
   const videoFeed = document.getElementById('videoFeed');
+
+  if (videos.length === 0) {
+    showError('No videos loaded. Check if data.csv exists and contains valid data.');
+    return;
+  }
 
   // Create video elements
   videos.forEach((video, index) => {
@@ -35,6 +69,7 @@ async function setupVideoFeed() {
     videoWrapper.innerHTML = `
       <video class="video-container" data-index="${index}" playsinline>
         <source src="${video.url}" type="video/mp4">
+        Your browser does not support the video tag.
       </video>
       <div class="absolute bottom-4 left-4 text-white text-sm bg-black bg-opacity-50 p-2 rounded">
         <p><strong>${video.title}</strong></p>
@@ -43,6 +78,7 @@ async function setupVideoFeed() {
     `;
     videoFeed.appendChild(videoWrapper);
   });
+  console.log(`Created ${videos.length} video elements`);
 
   // Video playback and navigation
   const videoElements = document.querySelectorAll('video');
@@ -53,9 +89,12 @@ async function setupVideoFeed() {
       video.pause();
       if (i === index) {
         video.currentTime = 0;
-        video.play().catch(err => console.error('Playback error:', err));
+        video.play().catch(err => {
+          showError(`Failed to play video ${videos[i].title}: ${err.message}`);
+        });
       }
     });
+    console.log(`Playing video ${index + 1}/${videoElements.length}`);
   };
 
   // Auto-play next video when current ends
