@@ -28,10 +28,24 @@
     #videoFeed > div {
       scroll-snap-align: start;
     }
+    #errorMessage {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 90%;
+    }
   </style>
 </head>
 <body class="bg-black">
   <div id="videoFeed" class="snap-y snap-mandatory"></div>
+  <div id="errorMessage"></div>
   <script src="script.js"></script>
 </body>
 </html>
