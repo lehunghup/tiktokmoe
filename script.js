@@ -54,6 +54,7 @@ function parseCSV(csv) {
 
 // Main function to set up video feed
 async function setupVideoFeed() {
+  console.log('Setting up video feed...');
   const videos = await loadCSV();
   const videoFeed = document.getElementById('videoFeed');
 
@@ -72,8 +73,8 @@ async function setupVideoFeed() {
         Your browser does not support the video tag.
       </video>
       <div class="absolute bottom-4 left-4 text-white text-sm bg-black bg-opacity-50 p-2 rounded">
-        <p><strong>${video.title}</strong></p>
-        <p>${video.how_long_ago} • ${video.size_formatted}</p>
+        <p><strong>${video.title || 'Untitled'}</strong></p>
+        <p>${video.how_long_ago || 'Unknown time'} • ${video.size_formatted || 'Unknown size'}</p>
       </div>
     `;
     videoFeed.appendChild(videoWrapper);
@@ -90,7 +91,7 @@ async function setupVideoFeed() {
       if (i === index) {
         video.currentTime = 0;
         video.play().catch(err => {
-          showError(`Failed to play video ${videos[i].title}: ${err.message}`);
+          showError(`Failed to play video ${videos[i].title || 'Untitled'}: ${err.message}`);
         });
       }
     });
